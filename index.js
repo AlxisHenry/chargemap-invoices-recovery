@@ -140,13 +140,14 @@ async function main() {
   }
 
   fs.writeFileSync(
-    "chargemap/invoices.json",
+    "app/public/invoices.json",
     JSON.stringify(invoices, null, 2)
   );
 
   await sleep(200);
 
-  const { CHARGEMAP_ACCOUNT_ID, CHARGEMAP_AUTH_TOKEN } = process.env;
+  const { CHARGEMAP_ACCOUNT_ID } = process.env;
+  const cookies = await page.cookies();
 
   try {
     const response = await fetch(
@@ -156,7 +157,8 @@ async function main() {
           accept: "application/json, text/plain, */*",
           "accept-language":
             "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6,es;q=0.5",
-          authorization: CHARGEMAP_AUTH_TOKEN,
+          authorization: cookies.find((cookie) => cookie.name === "session")
+            .value,
           baggage:
             "sentry-environment=production,sentry-release=20240314-101329,sentry-public_key=94f3f877053326442f895c22b0a69ae5,sentry-trace_id=6b78612b15ce4baf9f8cc018ff315282",
           "sec-ch-ua":
@@ -175,12 +177,12 @@ async function main() {
 
     const charges = await response.json();
     fs.writeFileSync(
-      "chargemap/charges.json",
+      "app/public/charges.json",
       JSON.stringify(charges, null, 2)
     );
   } catch (error) {
     console.error(
-      'The "Charges" API request failed, be sure you entered a valid CHARGEMAP_AUTH_TOKEN.'
+      'The "Charges" API request failed, the session cookie might be invalid.'
     );
   }
 
