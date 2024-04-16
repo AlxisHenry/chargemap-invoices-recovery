@@ -1,5 +1,16 @@
 {
-	"dependencies": {
-		"puppeteer": "^22.6.5"
-	}
+  "name": "chargemap-invoices-recovery",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file=.env index.js"
+  },
+  "dependencies": {
+    "puppeteer": "^22.6.5"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
