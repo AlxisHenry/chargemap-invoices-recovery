@@ -87,7 +87,7 @@ async function main() {
   ensureEnvironmentVariablesAreDefined();
 
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: "new",
     defaultViewport: null,
     args: ["--disable-features=site-per-process", "--window-size=1280,1080"],
   });
@@ -96,7 +96,11 @@ async function main() {
 
   await page.goto(urls.login);
 
-  await page.click(selectors.login.acceptCookiesButton);
+  try {
+    await page.click(selectors.login.acceptCookiesButton);
+  } catch (error) {
+    console.error('The "Accept cookies" button was not found.');
+  }
 
   await sleep();
 
@@ -140,32 +144,41 @@ async function main() {
 
   const { CHARGEMAP_ACCOUNT_ID, CHARGEMAP_AUTH_TOKEN } = process.env;
 
-  const response = await fetch(
-    `${urls.charges}?user_id=${CHARGEMAP_ACCOUNT_ID}`,
-    {
-      headers: {
-        accept: "application/json, text/plain, */*",
-        "accept-language":
-          "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6,es;q=0.5",
-        authorization: CHARGEMAP_AUTH_TOKEN,
-        baggage:
-          "sentry-environment=production,sentry-release=20240314-101329,sentry-public_key=94f3f877053326442f895c22b0a69ae5,sentry-trace_id=6b78612b15ce4baf9f8cc018ff315282",
-        "sec-ch-ua":
-          '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
-        "sec-ch-ua-mobile": "?0",
-        "sec-ch-ua-platform": '"Windows"',
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "sentry-trace": "6b78612b15ce4baf9f8cc018ff315282-8ad1b7f4dce43607",
-        Referer: "https://users.chargemap.com/",
-        "Referrer-Policy": "strict-origin",
-      },
-    }
-  );
+  try {
+    const response = await fetch(
+      `${urls.charges}?user_id=${CHARGEMAP_ACCOUNT_ID}`,
+      {
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "accept-language":
+            "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6,es;q=0.5",
+          authorization: CHARGEMAP_AUTH_TOKEN,
+          baggage:
+            "sentry-environment=production,sentry-release=20240314-101329,sentry-public_key=94f3f877053326442f895c22b0a69ae5,sentry-trace_id=6b78612b15ce4baf9f8cc018ff315282",
+          "sec-ch-ua":
+            '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": '"Windows"',
+          "sec-fetch-dest": "empty",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-site": "same-origin",
+          "sentry-trace": "6b78612b15ce4baf9f8cc018ff315282-8ad1b7f4dce43607",
+          Referer: "https://users.chargemap.com/",
+          "Referrer-Policy": "strict-origin",
+        },
+      }
+    );
 
-  const charges = await response.json();
-  fs.writeFileSync("chargemap/charges.json", JSON.stringify(charges, null, 2));
+    const charges = await response.json();
+    fs.writeFileSync(
+      "chargemap/charges.json",
+      JSON.stringify(charges, null, 2)
+    );
+  } catch (error) {
+    console.error(
+      'The "Charges" API request failed, be sure you entered a valid CHARGEMAP_AUTH_TOKEN.'
+    );
+  }
 
   await browser.close();
 }
