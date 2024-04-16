@@ -61,8 +61,12 @@ async function getInvoices(page) {
       let url = line.href,
         parts = url.split("/");
 
-      const payment_date = line.querySelector("div h5").innerText.split(" ")[2],
-        amount = line.querySelector("div p").innerText;
+      const payment_date = line.querySelector("div h5").innerText.split(" ")[2];
+      const amountWithCurrency = line.querySelector("div p").innerText;
+      const amountWithoutCurrency = amountWithCurrency.replace("€", "");
+      const amount = Math.round(
+        parseFloat(amountWithoutCurrency) * 100
+      ).toString();
 
       let date = "";
 
