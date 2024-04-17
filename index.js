@@ -178,7 +178,14 @@ async function main() {
     const charges = await response.json();
     fs.writeFileSync(
       "app/public/charges.json",
-      JSON.stringify(charges, null, 2)
+      JSON.stringify(
+        charges.items.map(({ date, charges }) => ({
+          date,
+          sessions: charges,
+        })),
+        null,
+        2
+      )
     );
   } catch (error) {
     console.error(

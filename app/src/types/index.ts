@@ -1,7 +1,3 @@
-export type MonthlyChargesJson = {
-  items: MonthlyCharges[];
-};
-
 export type Invoice = {
   date: string;
   payment_date: string;
@@ -10,12 +6,12 @@ export type Invoice = {
   invoice_url: string;
 };
 
-export type MonthlyCharges = {
+export type Charges = {
   date: string;
-  charges: ChargingSession[];
+  sessions: Session[];
 };
 
-export type ChargingSession = {
+export type Session = {
   uid: string;
   user_id: number;
   start_date: string;
@@ -26,10 +22,10 @@ export type ChargingSession = {
   user_email: string;
   chargemap_pass_uid: string;
   amount: string;
-  pool: ChargingSessionPool;
+  pool: SessionPool;
 };
 
-export type ChargingSessionPool = {
+export type SessionPool = {
   id: number;
   slug: string;
   name: string;

@@ -1,27 +1,33 @@
 import "./index.css";
 import { useEffect, useState } from "preact/hooks";
 
-import { parsePrice } from "./services";
-import type {
-  Invoice as InvoiceType,
-  MonthlyCharges,
-  MonthlyChargesJson,
-} from "./types";
+import {
+  computeTotalChargeCost,
+  computeTotalDuration,
+  countSessionsFromInvoices,
+  findInvoiceCharges,
+  killowattHourCostAverage,
+} from "./services";
+import type { Invoice as InvoiceType, Charges } from "./types";
 import { Invoice } from "./components/Invoice";
+import { StatsCard } from "./components/StatsCard";
 
 export function App() {
   const [invoicesLoaded, setInvoicesLoaded] = useState<boolean>(false);
   const [invoices, setInvoices] = useState<InvoiceType[]>([]);
-  const [monthlyChargesLoaded, setMonthlyChargesLoaded] =
-    useState<boolean>(false);
-  const [monthlyCharges, setMonthlyCharges] = useState<MonthlyCharges[]>([]);
+  const [chargesLoaded, setChargesLoaded] = useState<boolean>(false);
+  const [charges, setCharges] = useState<Charges[]>([]);
 
   useEffect(() => {
+    if (chargesLoaded && invoicesLoaded) {
+      return;
+    }
+
     fetch("/charges.json")
       .then((response) => response.json())
-      .then((data: MonthlyChargesJson) => {
-        setMonthlyCharges(data.items);
-        setMonthlyChargesLoaded(true);
+      .then((data: Charges[]) => {
+        setCharges(data);
+        setChargesLoaded(true);
       });
 
     fetch("/invoices.json")
@@ -32,29 +38,63 @@ export function App() {
       });
   }, []);
 
+  const isLoaded = invoicesLoaded && chargesLoaded;
+
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-2xl font-bold">Factures</h1>
-      <table className={"mt-6 border-t border-gray-200 px-1 w-full"}>
-        <tbody>
-          {invoicesLoaded ? (
-            invoices.map((invoice) => (
-              <tr>
-                <Invoice
-                  key={invoice.invoice_id}
-                  invoice={invoice}
-                  charges={
-                    monthlyCharges.find((_) => _.date === invoice.date)
-                      ?.charges || []
-                  }
-                />
-              </tr>
-            ))
-          ) : (
-            <li>Chargement...</li>
+      <div className={"mt-6"}>
+        <h1 className="text-2xl font-bold">Statistiques</h1>
+        <div
+          className={
+            "mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          }
+        >
+          {isLoaded && (
+            <>
+              <StatsCard title={"Nombre de mois"} value={invoices.length} />
+              <StatsCard title={"Nombre de factures"} value={invoices.length} />
+              <StatsCard
+                title={"Nombre de sessions"}
+                value={countSessionsFromInvoices(invoices, charges)}
+              />
+              <StatsCard
+                title={"Temps de recharge cumulé"}
+                value={computeTotalDuration(charges)}
+              />
+              <StatsCard
+                title={"Coût total des recharges"}
+                value={computeTotalChargeCost(charges)}
+                extension={"€"}
+              />
+              <StatsCard
+                title={"Coût moyen du kWh"}
+                value={killowattHourCostAverage(charges)}
+                extension={"€/kWh"}
+              />
+            </>
           )}
-        </tbody>
-      </table>
+        </div>
+      </div>
+      <div className={"mt-6"}>
+        <h1 className="text-2xl font-bold">Factures</h1>
+        <table className={"mt-6 border-t border-gray-200 px-1 w-full"}>
+          <tbody>
+            {isLoaded ? (
+              invoices.map((invoice) => (
+                <tr>
+                  <Invoice
+                    key={invoice.invoice_id}
+                    invoice={invoice}
+                    sessions={findInvoiceCharges(invoice, charges)}
+                  />
+                </tr>
+              ))
+            ) : (
+              <li>Chargement...</li>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

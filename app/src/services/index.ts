@@ -1,9 +1,71 @@
+import type { Invoice, Charges, Session } from "../types";
+
 function formatPrice(price: string): number {
   return parseInt(price) / 100;
 }
 
+export function findInvoiceCharges(
+  invoice: Invoice,
+  charges: Charges[]
+): Session[] {
+  return charges
+    .filter((charge) => charge.date === invoice.date)
+    .flatMap((charge) => charge.sessions);
+}
+
+export function computeTotalDuration(charges: Charges[]): string {
+  return formatChargeDuration(
+    charges
+      .flatMap((charge) => charge.sessions)
+      .reduce((acc, charge) => acc + charge?.duration, 0)
+  );
+}
+
+export function killowattHourCostAverage(charges: Charges[]): string {
+  let totalEnergy = charges
+    .flatMap((charge) => charge.sessions)
+    .reduce((acc, charge) => acc + charge.energy, 0);
+
+  let totalCost = charges
+    .flatMap((charge) => charge.sessions)
+    .reduce((acc, charge) => acc + formatPrice(charge.amount), 0);
+
+  return `${
+    Math.round((totalCost / fromWattHourToKilowattHour(totalEnergy)) * 1000) /
+    1000
+  }`;
+}
+
+export function formatStartDate(date: string): string {
+  return new Date(date).toLocaleDateString("fr-FR");
+}
+
+export function computeTotalChargeCost(charges: Charges[]): string {
+  let total = charges
+    .flatMap((charge) => charge.sessions)
+    .reduce((acc, charge) => acc + formatPrice(charge.amount), 0);
+
+  return `${total.toString()}`;
+}
+
+export function countSessionsFromInvoices(
+  invoices: Invoice[],
+  charges: Charges[]
+): number {
+  return invoices.flatMap((invoice) => findInvoiceCharges(invoice, charges))
+    .length;
+}
+
 export function formatChargeDuration(minutes: number): string {
-  return `${Math.ceil(minutes)} min.`;
+  let duration = Math.ceil(minutes);
+
+  if (duration < 60) {
+    return `${duration} min.`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = Math.ceil(minutes % 60);
+  return `${hours} h. ${remainingMinutes} min.`;
 }
 
 export function fromWattHourToKilowattHour(energy: number): number {
@@ -15,7 +77,6 @@ export function parsePrice(price: string, currency: string = "€"): string {
 }
 
 export function unitCost(price: string, energy: number): string {
-  // round 3 decimals
   return `${
     Math.round(
       (formatPrice(price) / fromWattHourToKilowattHour(energy)) * 1000

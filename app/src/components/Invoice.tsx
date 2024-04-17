@@ -1,26 +1,20 @@
 import { DateTime } from "luxon";
-import type { ChargingSession, Invoice } from "../types";
-import {
-  formatChargeDuration,
-  fromWattHourToKilowattHour,
-  parsePrice,
-  unitCost,
-} from "../services";
+
+import type { Session as SessionType, Invoice } from "../types";
+import { parsePrice } from "../services";
+
+import { Session } from "./Session";
 
 interface Props {
   invoice: Invoice;
-  charges: ChargingSession[];
+  sessions: SessionType[];
 }
 
 export function Invoice(props: Props) {
-  const { invoice, charges } = props;
+  const { invoice, sessions } = props;
 
   return (
-    <div
-      className={
-        "border-b border-gray-200 py-4 hover:bg-gray-50 px-1 transition-colors duration-200 ease-in-out"
-      }
-    >
+    <div className={"border-b border-gray-200 py-4"}>
       <div className={"flex justify-between items-center"}>
         <div className={"flex-1"}>
           <a href={invoice.invoice_url} class={"text-lg"}>
@@ -30,9 +24,13 @@ export function Invoice(props: Props) {
           </a>
         </div>
         <div className={"flex-1"}>
-          <span className={"text-gray-500 text-md block"}>
-            Payement effectué le {invoice.payment_date}
-          </span>
+          <div
+            className={
+              "bg-green-100 text-green-500 p-2 rounded-xl text-md text-center font-bold w-fit"
+            }
+          >
+            Payé le {invoice.payment_date}
+          </div>
         </div>
         <div className={"flex-1"}>
           <span className={"float-right text-md font-bold"}>
@@ -67,28 +65,14 @@ export function Invoice(props: Props) {
 
       <table className="mt-8 w-full">
         <tbody className="w-full">
-          {charges.length > 0 ? (
-            charges.map((charge) => (
-              <tr key={charge.uid} className={"py-2"}>
-                <td className="text-md text-gray-500">{charge.pool.name}</td>
-                <td className="text-md">
-                  {formatChargeDuration(charge.duration)}
-                </td>
-                <td className="text-md">
-                  {fromWattHourToKilowattHour(charge.energy)} kWh
-                </td>
-                <td className="text-md">
-                  {unitCost(charge.amount, charge.energy)}
-                </td>
-                <td className="text-md">
-                  {parsePrice(charge.amount)}
-                </td>
-              </tr>
+          {sessions.length > 0 ? (
+            sessions.map((session) => (
+              <Session key={session.uid} session={session} />
             ))
           ) : (
             <tr>
               <td colSpan={5} className="text-md text-gray-500">
-                Aucune charge n'a été effectuée pour cette facture.
+                Cette facture ne contient pas de session de charge.
               </td>
             </tr>
           )}
