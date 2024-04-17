@@ -35,22 +35,26 @@ export function App() {
   return (
     <div className="max-w-6xl mx-auto p-4">
       <h1 className="text-2xl font-bold">Factures</h1>
-      <ul className={"mt-6 border-t border-gray-200 px-1"}>
-        {invoicesLoaded ? (
-          invoices.map((invoice) => (
-            <Invoice
-              key={invoice.invoice_id}
-              invoice={invoice}
-              charges={
-                monthlyCharges.find((_) => _.date === invoice.date)?.charges ||
-                []
-              }
-            />
-          ))
-        ) : (
-          <li>Chargement...</li>
-        )}
-      </ul>
+      <table className={"mt-6 border-t border-gray-200 px-1 w-full"}>
+        <tbody>
+          {invoicesLoaded ? (
+            invoices.map((invoice) => (
+              <tr>
+                <Invoice
+                  key={invoice.invoice_id}
+                  invoice={invoice}
+                  charges={
+                    monthlyCharges.find((_) => _.date === invoice.date)
+                      ?.charges || []
+                  }
+                />
+              </tr>
+            ))
+          ) : (
+            <li>Chargement...</li>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
