@@ -28,7 +28,6 @@ function ensureEnvironmentVariablesAreDefined() {
     "CHARGEMAP_EMAIL",
     "CHARGEMAP_PASSWORD",
     "CHARGEMAP_ACCOUNT_ID",
-    "CHARGEMAP_AUTH_TOKEN",
   ];
 
   required.forEach((variable) => {
@@ -90,6 +89,8 @@ async function getInvoices(page) {
 async function main() {
   ensureEnvironmentVariablesAreDefined();
 
+  console.log("Environment variables are defined, puppeteer can be started.");
+
   const browser = await puppeteer.launch({
     headless: "new",
     defaultViewport: null,
@@ -98,31 +99,41 @@ async function main() {
 
   const page = await browser.newPage();
 
+  console.log("Opening the login page.");
   await page.goto(urls.login);
 
   try {
     await page.click(selectors.login.acceptCookiesButton);
   } catch (error) {
-    console.error('The "Accept cookies" button was not found.');
+    console.log('The "Accept cookies" button was not found.');
   }
 
   await sleep();
 
   const { CHARGEMAP_EMAIL, CHARGEMAP_PASSWORD } = process.env;
 
+  console.log("Opening the login modal.");
   await page.click(selectors.login.loginButton);
+
   await sleep(1000);
+
+  console.log("Typing the email and password.");
   await type(page, selectors.login.email, CHARGEMAP_EMAIL);
   await type(page, selectors.login.password, CHARGEMAP_PASSWORD);
+
   await sleep(1000);
+
+  console.log("Submitting the login form.");
   await page.click(selectors.login.submit);
 
   await page.waitForNavigation();
 
+  console.log("Opening the invoices page.");
   await page.goto(urls.invoices);
 
   await page.waitForSelector("#invoices > div.text-center > ul");
 
+  console.log("Getting the number of invoices pages.");
   const invoicesPages = await page.evaluate(() => {
     return document.querySelectorAll("#invoices > div.text-center > ul > li")
       .length;
@@ -130,15 +141,19 @@ async function main() {
 
   await sleep();
 
+  console.log(`There are ${invoicesPages} invoices pages.`);
+
   let invoices = [];
 
   for (let i = 1; i <= invoicesPages; i++) {
+    console.log(`Opening invoices page ${i}.`);
     const invoiceSelector = `#invoices > div.text-center > ul > li:nth-child(${i}) > a`;
     await page.click(invoiceSelector);
     await sleep(500);
     invoices = invoices.concat(await getInvoices(page));
   }
 
+  console.log("Writing the invoices to the file.");
   fs.writeFileSync(
     "app/public/invoices.json",
     JSON.stringify(invoices, null, 2)
@@ -187,6 +202,8 @@ async function main() {
         2
       )
     );
+
+    console.log("The charges have been written to the file.");
   } catch (error) {
     console.error(
       'The "Charges" API request failed, the session cookie might be invalid.'
