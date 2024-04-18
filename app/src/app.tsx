@@ -4,6 +4,7 @@ import { useEffect, useState } from "preact/hooks";
 import {
   computeTotalChargeCost,
   computeTotalDuration,
+  computeTotalEnergy,
   countSessionsFromInvoices,
   findInvoiceCharges,
   getDateWithMonthName,
@@ -54,7 +55,6 @@ export function App() {
           {isLoaded && (
             <>
               <StatsCard title={"Nombre de mois"} value={invoices.length} />
-              <StatsCard title={"Nombre de factures"} value={invoices.length} />
               <StatsCard
                 title={"Nombre de sessions"}
                 value={countSessionsFromInvoices(invoices, charges)}
@@ -72,6 +72,11 @@ export function App() {
                 title={"Coût moyen du kWh"}
                 value={killowattHourCostAverage(charges)}
                 extension={"€/kWh"}
+              />
+              <StatsCard
+                title={"Energie totale délivrée"}
+                value={computeTotalEnergy(charges)}
+                extension={"kWh"}
               />
             </>
           )}

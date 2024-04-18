@@ -41,6 +41,14 @@ export function computeTotalDuration(charges: Charges[]): string {
   );
 }
 
+export function computeTotalEnergy(charges: Charges[]): string {
+  return `${fromWattHourToKilowattHour(
+    charges
+      .flatMap((charge) => charge.sessions)
+      .reduce((acc, charge) => acc + charge.energy, 0)
+  ).toFixed(2)}`;
+}
+
 export function killowattHourCostAverage(charges: Charges[]): string {
   let totalEnergy = charges
     .flatMap((charge) => charge.sessions)
