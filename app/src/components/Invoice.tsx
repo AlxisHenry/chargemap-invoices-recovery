@@ -1,9 +1,5 @@
-import { DateTime } from "luxon";
-
 import type { Session as SessionType, Invoice } from "../types";
-import { parsePrice } from "../services";
-
-import { Session } from "./Session";
+import { getDateWithMonthName, parsePrice } from "../services";
 
 interface Props {
   invoice: Invoice;
@@ -11,16 +7,14 @@ interface Props {
 }
 
 export function Invoice(props: Props) {
-  const { invoice, sessions } = props;
+  const { invoice } = props;
 
   return (
     <div className={"border-b border-gray-200 py-4"}>
       <div className={"flex justify-between items-center"}>
         <div className={"flex-1"}>
           <a href={invoice.invoice_url} class={"text-lg"}>
-            {DateTime.fromISO(invoice.date)
-              .toLocaleString(DateTime.DATE_FULL)
-              .slice(2)}
+            {getDateWithMonthName(invoice.date)}
           </a>
         </div>
         <div className={"flex-1"}>
@@ -62,22 +56,6 @@ export function Invoice(props: Props) {
           </a>
         </div>
       </div>
-
-      <table className="mt-8 w-full">
-        <tbody className="w-full">
-          {sessions.length > 0 ? (
-            sessions.map((session) => (
-              <Session key={session.uid} session={session} />
-            ))
-          ) : (
-            <tr>
-              <td colSpan={5} className="text-md text-gray-500">
-                Cette facture ne contient pas de session de charge.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
     </div>
   );
 }

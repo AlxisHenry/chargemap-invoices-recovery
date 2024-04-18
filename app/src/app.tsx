@@ -6,11 +6,13 @@ import {
   computeTotalDuration,
   countSessionsFromInvoices,
   findInvoiceCharges,
+  getDateWithMonthName,
   killowattHourCostAverage,
 } from "./services";
 import type { Invoice as InvoiceType, Charges } from "./types";
 import { Invoice } from "./components/Invoice";
 import { StatsCard } from "./components/StatsCard";
+import { Session } from "./components/Session.tsx";
 
 export function App() {
   const [invoicesLoaded, setInvoicesLoaded] = useState<boolean>(false);
@@ -41,7 +43,7 @@ export function App() {
   const isLoaded = invoicesLoaded && chargesLoaded;
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto p-4 mb-12">
       <div className={"mt-6"}>
         <h1 className="text-2xl font-bold">Statistiques</h1>
         <div
@@ -74,6 +76,24 @@ export function App() {
             </>
           )}
         </div>
+      </div>
+      <div className={"mt-6"}>
+        <h1 className="text-2xl font-bold">Sessions</h1>
+        {charges.length > 0 &&
+          charges.map((charge) => (
+            <>
+              <h2 className={"text-lg mt-4"}>
+                {getDateWithMonthName(charge.date)}
+              </h2>
+              <table className="mt-3 w-full border border-gray-200">
+                <tbody className="w-full border border-gray-200">
+                  {charge.sessions.map((session) => (
+                    <Session key={session.uid} session={session} />
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ))}
       </div>
       <div className={"mt-6"}>
         <h1 className="text-2xl font-bold">Factures</h1>
