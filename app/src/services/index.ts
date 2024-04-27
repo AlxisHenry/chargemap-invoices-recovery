@@ -73,7 +73,7 @@ export function computeTotalChargeCost(charges: Charges[]): string {
     .flatMap((charge) => charge.sessions)
     .reduce((acc, charge) => acc + formatPrice(charge.amount), 0);
 
-  return `${total.toString()}`;
+  return `${total.toFixed(2).toString()}`;
 }
 
 export function countSessionsFromInvoices(
