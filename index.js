@@ -2,7 +2,7 @@ import puppeteer from "puppeteer";
 import fs from "fs";
 
 const urls = {
-  login: "https://fr.chargemap.com",
+  login: "https://fr.chargemap.com/signin",
   invoices: "https://fr.chargemap.com/user/invoices",
   charges: "https://users.chargemap.com/community-charges/public-charges",
 };
@@ -46,7 +46,7 @@ async function type(page, selector, text) {
   await element.dispose();
 }
 
-function sleep(ms = 1000) {
+async function sleep(ms = 1000) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -112,11 +112,6 @@ async function main() {
 
   const { CHARGEMAP_EMAIL, CHARGEMAP_PASSWORD } = process.env;
 
-  console.log("Opening the login modal.");
-  await page.click(selectors.login.loginButton);
-
-  await sleep(1000);
-
   console.log("Typing the email and password.");
   await type(page, selectors.login.email, CHARGEMAP_EMAIL);
   await type(page, selectors.login.password, CHARGEMAP_PASSWORD);
@@ -131,11 +126,11 @@ async function main() {
   console.log("Opening the invoices page.");
   await page.goto(urls.invoices);
 
-  await page.waitForSelector("#invoices > div.text-center > ul");
+  await page.waitForSelector("#invoices > div.tw-text-center > ul");
 
   console.log("Getting the number of invoices pages.");
   const invoicesPages = await page.evaluate(() => {
-    return document.querySelectorAll("#invoices > div.text-center > ul > li")
+    return document.querySelectorAll("#invoices > div.tw-text-center > ul > li")
       .length;
   });
 
@@ -147,7 +142,7 @@ async function main() {
 
   for (let i = 1; i <= invoicesPages; i++) {
     console.log(`Opening invoices page ${i}.`);
-    const invoiceSelector = `#invoices > div.text-center > ul > li:nth-child(${i}) > a`;
+    const invoiceSelector = `#invoices > div.tw-text-center > ul > li:nth-child(${i}) > a`;
     await page.click(invoiceSelector);
     await sleep(500);
     invoices = invoices.concat(await getInvoices(page));
