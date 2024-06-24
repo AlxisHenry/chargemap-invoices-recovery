@@ -13,10 +13,9 @@ const selectors = {
     loginButton:
       "#member_header > a.cmp-button.cmp-button--primary.cmp-button--primary__medium.gtm-NavBarPrincipale",
     email: "#signinEmail",
-    password:
-      "#connexion > div > div.swiper-container > div > div:nth-child(1) > div:nth-child(2) > div > form > div.input-group > input",
+    password: "#signupPassword",
     submit:
-      "#connexion > div > div.swiper-container > div > div:nth-child(1) > div:nth-child(2) > div > form > div:nth-child(7) > button",
+      "#connexion > div > div.swiper-container > div > div:nth-child(1) > div:nth-child(2) > div > form > div:nth-child(5) > button",
   },
   invoices: {
     invoicesButton: "#member_header > a.cmp-button.cmp-button--primary",
